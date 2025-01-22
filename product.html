@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Produk - Admin Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    /* Gaya Sidebar */
+    .sidebar {
+      width: 250px;
+      height: 100vh;
+      background-color: #343a40;
+      color: white;
+      position: fixed;
+      overflow-y: auto;
+    }
+
+    .sidebar h3 {
+      text-align: center;
+      padding: 20px 0;
+      font-size: 18px;
+      font-weight: bold;
+      border-bottom: 1px solid #495057;
+    }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      padding: 15px 20px;
+      display: block;
+      transition: background-color 0.3s ease;
+    }
+
+    .sidebar a:hover {
+      background-color: #495057;
+    }
+
+    .sidebar a.active {
+      background-color: #007bff;
+      color: white;
+    }
+
+    /* Gaya Konten */
+    .content {
+      margin-left: 250px;
+      padding: 20px;
+      width: calc(100% - 250px);
+      min-height: 100vh;
+      background-color: #f8f9fa;
+    }
+
+    .content h5 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #343a40;
+    }
+
+    /* Gaya Tabel */
+    .table {
+      margin-top: 15px;
+      background-color: #ffffff;
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    .table th,
+    .table td {
+      border: 1px solid #dee2e6;
+      padding: 10px;
+      text-align: left;
+    }
+
+    .table th {
+      background-color: #f8f9fa;
+    }
+
+    .table td {
+      background-color: #ffffff;
+    }
+
+    /* Responsif */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+      }
+
+      .content {
+        margin-left: 0;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h3>Admin Dashboard</h3>
+    <a href="dashboardadmin.html"><i class="bi bi-speedometer2"></i> Dashboard</a>
+    <a href="product.html" class="active"><i class="bi bi-box"></i> Produk</a>
+    <a href="pesanan.html"><i class="bi bi-cart"></i> Pesanan</a>
+    <a href="pengguna.html"><i class="bi bi-people"></i> Pengguna</a>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+    <h5>Produk</h5>
+    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addProductModal">Tambah Produk</button>
+
+    <!-- Tabel Produk -->
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nama Produk</th>
+          <th>Kategori</th>
+          <th>Berat</th>
+          <th>Harga</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="productTableBody">
+        <!-- Data akan dimuat secara dinamis -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal Tambah Produk -->
+  <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addProductModalLabel">Tambah Produk</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="addProductForm">
+            <div class="mb-3">
+              <label for="productName" class="form-label">Nama Produk</label>
+              <input type="text" class="form-control" id="productName" required>
+            </div>
+            <div class="mb-3">
+              <label for="productCategory" class="form-label">Kategori</label>
+              <select class="form-select" id="productCategory" required>
+                <option value="Emas">Emas</option>
+                <option value="Berlian">Berlian</option>
+                <option value="Logam Mulia">Logam Mulia</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="productWeight" class="form-label">Berat (gram)</label>
+              <input type="number" class="form-control" id="productWeight" required>
+            </div>
+            <div class="mb-3">
+              <label for="productPrice" class="form-label">Harga</label>
+              <input type="number" class="form-control" id="productPrice" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Simpan</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script -->
+  <script>
+    let products = [
+      { id: 1, name: "Cincin Emas 24K", category: "Emas", weight: 5, price: 7500000 },
+      { id: 2, name: "Kalung Berlian", category: "Berlian", weight: 3, price: 12000000 }
+    ];
+
+    function loadProducts() {
+      const productTableBody = document.getElementById("productTableBody");
+      productTableBody.innerHTML = "";
+      products.forEach(product => {
+        const row = `
+          <tr>
+            <td>${product.id}</td>
+            <td>${product.name}</td>
+            <td>${product.category}</td>
+            <td>${product.weight} gram</td>
+            <td>Rp ${product.price.toLocaleString("id-ID")}</td>
+            <td>
+              <button class="btn btn-warning btn-sm" onclick="editProduct(${product.id})">Edit</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteProduct(${product.id})">Hapus</button>
+            </td>
+          </tr>
+        `;
+        productTableBody.innerHTML += row;
+      });
+    }
+
+    // Tambah Produk
+    document.getElementById("addProductForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const name = document.getElementById("productName").value;
+      const category = document.getElementById("productCategory").value;
+      const weight = parseFloat(document.getElementById("productWeight").value);
+      const price = parseFloat(document.getElementById("productPrice").value);
+
+      products.push({ id: products.length + 1, name, category, weight, price });
+      Swal.fire("Berhasil!", "Produk berhasil ditambahkan.", "success");
+      loadProducts();
+      document.getElementById("addProductForm").reset();
+      bootstrap.Modal.getInstance(document.getElementById("addProductModal")).hide();
+    });
+
+    // Hapus Produk
+    function deleteProduct(id) {
+      products = products.filter(product => product.id !== id);
+      Swal.fire("Berhasil!", "Produk berhasil dihapus.", "success");
+      loadProducts();
+    }
+
+    // Edit Produk
+    function editProduct(id) {
+      const product = products.find(product => product.id === id);
+      if (!product) return;
+
+      Swal.fire({
+        title: "Edit Produk",
+        html: `
+          <input id="editName" class="swal2-input" value="${product.name}">
+          <select id="editCategory" class="swal2-input">
+            <option value="Emas" ${product.category === "Emas" ? "selected" : ""}>Emas</option>
+            <option value="Berlian" ${product.category === "Berlian" ? "selected" : ""}>Berlian</option>
+            <option value="Logam Mulia" ${product.category === "Logam Mulia" ? "selected" : ""}>Logam Mulia</option>
+          </select>
+          <input id="editWeight" class="swal2-input" type="number" value="${product.weight}">
+          <input id="editPrice" class="swal2-input" type="number" value="${product.price}">
+        `,
+        preConfirm: () => {
+          product.name = document.getElementById("editName").value;
+          product.category = document.getElementById("editCategory").value;
+          product.weight = parseFloat(document.getElementById("editWeight").value);
+          product.price = parseFloat(document.getElementById("editPrice").value);
+        }
+      }).then(() => {
+        Swal.fire("Berhasil!", "Produk berhasil diperbarui.", "success");
+        loadProducts();
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", loadProducts);
+  </script>
+</body>
+</html>
