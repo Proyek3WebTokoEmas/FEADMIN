@@ -204,9 +204,9 @@
     const ctx = document.getElementById("purchaseChart").getContext("2d");
     new Chart(ctx, config);
 
-    // Fetch Harga Emas
-    async function fetchGoldPrice() {
-      const apiKey = "8edbc89e220f01caa48384fce2f5683b"; // Ganti dengan API Key Anda
+    // Mengambil Harga Emas
+    async function fetchMetalPrice() {
+      const apiKey = '3bec39cd0e16fd06fc7dcda567d48bab'; // API Key Anda
       const goldPriceElement = document.getElementById("goldPrice");
 
       try {
@@ -251,7 +251,7 @@
 
     // Muat Data Saat Halaman Dimuat
     document.addEventListener("DOMContentLoaded", () => {
-      fetchGoldPrice();
+      fetchMetalPrice(); // Memanggil fungsi untuk mendapatkan harga emas
       loadUsers();
     });
   </script>
