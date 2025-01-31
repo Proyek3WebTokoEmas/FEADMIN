@@ -99,11 +99,10 @@
       <thead>
         <tr>
           <th>ID</th>
-          <th>Nama Pelanggan</th>
-          <th>Produk</th>
-          <th>Berat (gram)</th>
+          <th>Jenis Perhiasan</th>
+          <th>Jenis Emas</th>
+          <th>Berat Emas (gram)</th>
           <th>Total Harga</th>
-          <th>Status</th>
           <th>Aksi</th>
         </tr>
       </thead>
@@ -115,11 +114,9 @@
 
   <!-- Script -->
   <script>
-    let orders = [
-      { id: 1, customer: "Budi", product: "Cincin Emas 24K", weight: 5, status: "Completed" },
-      { id: 2, customer: "Siti", product: "Kalung Emas 18K", weight: 10, status: "Pending" }
-    ];
+    let orders = [];
 
+    // Mengambil harga emas terbaru
     async function fetchMetalPrice() {
       const apiKey = '3bec39cd0e16fd06fc7dcda567d48bab';
       try {
@@ -132,12 +129,8 @@
         const goldPricePerOunceInIDR = (1 / xauRate) * idrRate;
         window.goldPricePerGram = goldPricePerOunceInIDR / 31.1035;
 
-        // Update orders' prices
-        orders = orders.map(order => ({
-          ...order,
-          price: order.weight * window.goldPricePerGram
-        }));
-        loadOrders();
+        // Panggil untuk mengambil data pesanan setelah harga emas didapatkan
+        fetchOrders();
       } catch (error) {
         console.error('Error fetching metal price:', error);
         Swal.fire({
@@ -148,19 +141,48 @@
       }
     }
 
+    // Mengambil data pesanan
+    async function fetchOrders() {
+      try {
+        const response = await fetch('http://localhost:8081/orders');
+        if (!response.ok) {
+          throw new Error('Failed to fetch orders');
+        }
+        const ordersFromBackend = await response.json();
+        
+        // Menambahkan harga ke setiap pesanan
+        orders = ordersFromBackend.map(order => ({
+          ...order,
+          price: order.berat_emas * window.goldPricePerGram
+        }));
+
+        loadOrders();
+      } catch (error) {
+        console.error('Error fetching orders:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal Mendapatkan Data Pesanan',
+          text: 'Pastikan koneksi internet stabil.',
+        });
+      }
+    }
+
+    // Memuat data pesanan ke dalam tabel
     function loadOrders() {
       const orderTableBody = document.getElementById("orderTableBody");
       orderTableBody.innerHTML = "";
-
+      
+      // Debug log untuk memeriksa data yang diterima
+      console.log("Orders to load:", orders);
+      
       orders.forEach(order => {
         const row = `
           <tr>
-            <td>${order.id}</td>
-            <td>${order.customer}</td>
-            <td>${order.product}</td>
-            <td>${order.weight} gram</td>
-            <td>Rp ${order.price.toLocaleString("id-ID")}</td>
-            <td>${order.status}</td>
+            <td>${order.id || 'Tidak ada ID'}</td> <!-- Memastikan ID ditampilkan -->
+            <td>${order.jenis_perhiasan || 'Tidak ada data'}</td>
+            <td>${order.jenis_emas || 'Tidak ada data'}</td>
+            <td>${order.berat_emas || 0} gram</td>
+            <td>Rp ${order.price ? order.price.toLocaleString("id-ID") : 'Tidak ada harga'}</td>
             <td>
               <button class="btn btn-warning btn-sm" onclick="editOrder(${order.id})">Edit</button>
               <button class="btn btn-danger btn-sm" onclick="deleteOrder(${order.id})">Hapus</button>
@@ -171,12 +193,14 @@
       });
     }
 
+    // Menghapus pesanan
     function deleteOrder(id) {
       orders = orders.filter(order => order.id !== id);
       Swal.fire("Berhasil!", "Pesanan berhasil dihapus.", "success");
       loadOrders();
     }
 
+    // Mengedit status pesanan
     function editOrder(id) {
       const order = orders.find(order => order.id === id);
       if (!order) return;

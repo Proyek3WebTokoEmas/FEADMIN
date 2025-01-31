@@ -225,35 +225,53 @@
       }
     }
 
-    // Daftar Pengguna Simulasi
-    const users = [
-      { id: 1, name: "Wafid Mukhayyar", email: "wafid@example.com" },
-      { id: 2, name: "Aisyah Putri", email: "aisyah@example.com" },
-      { id: 3, name: "Dimas Pratama", email: "dimas@example.com" }
-    ];
-
-    // Load Pengguna
-    function loadUsers() {
-      const userTableBody = document.getElementById("userTableBody");
-      userTableBody.innerHTML = "";
-
-      users.forEach(user => {
-        const row = `
-          <tr>
-            <td>${user.id}</td>
-            <td>${user.name}</td>
-            <td>${user.email}</td>
-          </tr>
-        `;
-        userTableBody.innerHTML += row;
-      });
-    }
-
-    // Muat Data Saat Halaman Dimuat
-    document.addEventListener("DOMContentLoaded", () => {
-      fetchMetalPrice(); // Memanggil fungsi untuk mendapatkan harga emas
-      loadUsers();
-    });
+    async function loadUsers() {
+      try {
+          // Panggil API untuk mengambil data pengguna tanpa autentikasi
+          const response = await fetch("http://localhost:8081/users", {
+              method: "GET",
+              headers: {
+                  "Content-Type": "application/json"
+              }
+          });
+  
+          if (!response.ok) {
+              throw new Error('Gagal mengambil data pengguna');
+          }
+  
+          // Ambil data pengguna dari respons
+          const users = await response.json();
+          console.log("Data pengguna:", users);
+  
+          // Tampilkan data pengguna di tabel
+          const userTableBody = document.getElementById("userTableBody");
+          userTableBody.innerHTML = ""; // Bersihkan tabel sebelum menambahkan data baru
+  
+          users.forEach(user => {
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                  <td>${user.id}</td>
+                  <td>${user.name}</td>
+                  <td>${user.email}</td>
+                  <td>${user.verified ? "✔️ Terverifikasi" : "❌ Belum Verifikasi"}</td>
+              `;
+              userTableBody.appendChild(row);
+          });
+  
+      } catch (error) {
+          console.error("Error fetching users:", error);
+          Swal.fire({
+              title: 'Gagal mengambil data pengguna!',
+              text: error.message || "Terjadi kesalahan saat mengambil data pengguna.",
+              icon: 'error',
+              confirmButtonText: 'OK'
+          });
+      }
+  }
+  
+  // Panggil fungsi untuk memuat pengguna saat halaman dimuat
+  document.addEventListener("DOMContentLoaded", loadUsers);
+  
   </script>
 </body>
 </html>
