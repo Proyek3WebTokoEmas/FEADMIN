@@ -104,6 +104,7 @@
           <th>Jenis Emas</th>
           <th>Berat Emas (gram)</th>
           <th>Total Harga</th>
+          <th>Status</th> <!-- Kolom Status Ditambahkan -->
           <th>Aksi</th>
         </tr>
       </thead>
@@ -173,17 +174,15 @@
       const orderTableBody = document.getElementById("orderTableBody");
       orderTableBody.innerHTML = "";
       
-      // Debug log untuk memeriksa data yang diterima
-      console.log("Orders to load:", orders);
-      
       orders.forEach(order => {
         const row = `
           <tr>
-            <td>${order.id || 'Tidak ada ID'}</td> <!-- Memastikan ID ditampilkan -->
+            <td>${order.id || 'Tidak ada ID'}</td>
             <td>${order.jenis_perhiasan || 'Tidak ada data'}</td>
             <td>${order.jenis_emas || 'Tidak ada data'}</td>
             <td>${order.berat_emas || 0} gram</td>
             <td>Rp ${order.price ? order.price.toLocaleString("id-ID") : 'Tidak ada harga'}</td>
+            <td>${order.status || 'Pending'}</td> <!-- Menampilkan Status -->
             <td>
               <button class="btn btn-warning btn-sm" onclick="editOrder(${order.id})">Edit</button>
               <button class="btn btn-danger btn-sm" onclick="deleteOrder(${order.id})">Hapus</button>
