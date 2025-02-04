@@ -148,28 +148,31 @@
       try {
         const response = await fetch('https://be-3.vercel.app/payment');
         if (!response.ok) {
-          throw new Error('Failed to fetch orders');
+          throw new Error('Failed to fetch payment data');
         }
-        const ordersFromBackend = await response.json();
-        
-        // Menambahkan harga ke setiap pesanan
-        orders = ordersFromBackend.map(order => ({
-          ...order,
-          price: order.berat_emas * window.goldPricePerGram
+        const paymentsFromBackend = await response.json();
+    
+        // Konversi data payments agar sesuai dengan struktur pesanan yang digunakan di tabel
+        orders = paymentsFromBackend.map(payment => ({
+          id: payment.order_id || 'Tidak ada ID',
+          customer_name: payment.customer_name || 'Tidak ada nama',
+          customer_email: payment.customer_email || 'Tidak ada email',
+          total_payment: payment.gross_amount || 0,
+          status: payment.status || 'Pending'
         }));
-
+    
         loadOrders();
       } catch (error) {
-        console.error('Error fetching orders:', error);
+        console.error('Error fetching payments:', error);
         Swal.fire({
           icon: 'error',
-          title: 'Gagal Mendapatkan Data Pesanan',
+          title: 'Gagal Mendapatkan Data Pembayaran',
           text: 'Pastikan koneksi internet stabil.',
         });
       }
     }
-
-    // Memuat data pesanan ke dalam tabel
+    
+    // Memuat data pembayaran ke dalam tabel
     function loadOrders() {
       const orderTableBody = document.getElementById("orderTableBody");
       orderTableBody.innerHTML = "";
@@ -177,41 +180,40 @@
       orders.forEach(order => {
         const row = `
           <tr>
-            <td>${order.id || 'Tidak ada ID'}</td>
-            <td>${order.jenis_perhiasan || 'Tidak ada data'}</td>
-            <td>${order.jenis_emas || 'Tidak ada data'}</td>
-            <td>${order.berat_emas || 0} gram</td>
-            <td>Rp ${order.price ? order.price.toLocaleString("id-ID") : 'Tidak ada harga'}</td>
-            <td>${order.status || 'Pending'}</td> <!-- Menampilkan Status -->
+            <td>${order.id}</td>
+            <td>${order.customer_name}</td>
+            <td>${order.customer_email}</td>
+            <td>Rp ${order.total_payment.toLocaleString("id-ID")}</td>
+            <td>${order.status}</td> <!-- Menampilkan Status Pembayaran -->
             <td>
-              <button class="btn btn-warning btn-sm" onclick="editOrder(${order.id})">Edit</button>
-              <button class="btn btn-danger btn-sm" onclick="deleteOrder(${order.id})">Hapus</button>
+              <button class="btn btn-warning btn-sm" onclick="editOrder('${order.id}')">Edit</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteOrder('${order.id}')">Hapus</button>
             </td>
           </tr>
         `;
         orderTableBody.innerHTML += row;
       });
     }
-
+    
     // Menghapus pesanan
     function deleteOrder(id) {
       orders = orders.filter(order => order.id !== id);
-      Swal.fire("Berhasil!", "Pesanan berhasil dihapus.", "success");
+      Swal.fire("Berhasil!", "Data pembayaran berhasil dihapus.", "success");
       loadOrders();
     }
-
+    
     // Mengedit status pesanan
     function editOrder(id) {
       const order = orders.find(order => order.id === id);
       if (!order) return;
-
+    
       Swal.fire({
-        title: "Edit Status Pesanan",
+        title: "Edit Status Pembayaran",
         html: `
           <select id="editStatus" class="swal2-input">
             <option value="Pending" ${order.status === "Pending" ? "selected" : ""}>Pending</option>
-            <option value="Completed" ${order.status === "Completed" ? "selected" : ""}>Completed</option>
-            <option value="Canceled" ${order.status === "Canceled" ? "selected" : ""}>Canceled</option>
+            <option value="Settlement" ${order.status === "settlement" ? "selected" : ""}>Settlement</option>
+            <option value="Failed" ${order.status === "failed" ? "selected" : ""}>Failed</option>
           </select>
         `,
         preConfirm: () => {
@@ -219,10 +221,14 @@
           order.status = status;
         }
       }).then(() => {
-        Swal.fire("Berhasil!", "Status pesanan berhasil diperbarui.", "success");
+        Swal.fire("Berhasil!", "Status pembayaran berhasil diperbarui.", "success");
         loadOrders();
       });
     }
+    
+    // Panggil fetchOrders untuk memuat data pertama kali
+    fetchOrders();
+    
 
     document.addEventListener("DOMContentLoaded", fetchMetalPrice);
   </script>
