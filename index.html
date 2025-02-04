@@ -229,7 +229,7 @@
     async function loadUsers() {
       try {
           // Panggil API untuk mengambil data pengguna tanpa autentikasi
-          const response = await fetch("http://localhost:8081/users", {
+          const response = await fetch("https://be-3.vercel.app/users", {
               method: "GET",
               headers: {
                   "Content-Type": "application/json"
