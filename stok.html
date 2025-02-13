@@ -79,69 +79,82 @@
   <script>
     // Data default jika localStorage kosong
     const defaultStockData = [
-      { jenis: "Anting", stok: 20 },
-      { jenis: "Cincin", stok: 35 },
-      { jenis: "Kalung", stok: 15 },
-      { jenis: "Gelang", stok: 25 }
+        { jenis: "Anting", stok: 20 },
+        { jenis: "Cincin", stok: 35 },
+        { jenis: "Kalung", stok: 15 },
+        { jenis: "Gelang", stok: 25 }
     ];
 
     function getStockData() {
-      let stockData = localStorage.getItem("stockData");
-      return stockData ? JSON.parse(stockData) : defaultStockData;
+        let stockData = localStorage.getItem("stockData");
+        return stockData ? JSON.parse(stockData) : defaultStockData;
     }
 
     function saveStockData(data) {
-      localStorage.setItem("stockData", JSON.stringify(data));
+        localStorage.setItem("stockData", JSON.stringify(data));
     }
 
     function loadStock() {
-      const stockData = getStockData();
-      const stockTableBody = document.getElementById("stockTableBody");
-      stockTableBody.innerHTML = "";
+        const stockData = getStockData();
+        const stockTableBody = document.getElementById("stockTableBody");
+        stockTableBody.innerHTML = "";
 
-      stockData.forEach((item, index) => {
-        const row = `
-          <tr>
-            <td>${item.jenis}</td>
-            <td><span id="stok-${index}">${item.stok}</span></td>
-            <td>
-              <button class="btn btn-success btn-sm" onclick="tambahStok(${index})">Tambah</button>
-              <button class="btn btn-danger btn-sm" onclick="kurangiStok(${index})">Kurangi</button>
-            </td>
-          </tr>
-        `;
-        stockTableBody.innerHTML += row;
-      });
+        stockData.forEach((item, index) => {
+            const row = `
+                <tr>
+                    <td>${item.jenis}</td>
+                    <td><span id="stok-${index}">${item.stok}</span></td>
+                    <td>
+                        <button class="btn btn-success btn-sm" onclick="tambahStok(${index})">Tambah</button>
+                        <button class="btn btn-danger btn-sm" onclick="kurangiStok(${index})">Kurangi</button>
+                    </td>
+                </tr>
+            `;
+            stockTableBody.innerHTML += row;
+        });
     }
 
     function tambahStok(index) {
-      let stockData = getStockData();
-      stockData[index].stok += 1;
-      saveStockData(stockData);
-      loadStock();
+        let stockData = getStockData();
+        stockData[index].stok += 1;
+        saveStockData(stockData);
+        loadStock();
     }
 
     function kurangiStok(index) {
-      let stockData = getStockData();
-      if (stockData[index].stok > 0) {
-        stockData[index].stok -= 1;
-        saveStockData(stockData);
-        loadStock();
-      } else {
-        alert("Stok tidak boleh kurang dari 0!");
-      }
+        let stockData = getStockData();
+        if (stockData[index].stok > 0) {
+            stockData[index].stok -= 1;
+            saveStockData(stockData);
+            loadStock();
+        } else {
+            alert("Stok tidak boleh kurang dari 0!");
+        }
     }
+
+    // Event listener untuk mendeteksi perubahan di localStorage
+    window.addEventListener("storage", function(event) {
+        if (event.key === "stockUpdated") {
+            let updatedStock = JSON.parse(localStorage.getItem("stockUpdated"));
+            let stockData = getStockData();
+
+            let found = stockData.find(item => item.jenis.includes("Kalung"));
+            if (found) {
+                found.stok = updatedStock.stock;
+                saveStockData(stockData);
+                loadStock();
+            }
+        }
+    });
 
     // Pastikan localStorage terisi saat pertama kali
     if (!localStorage.getItem("stockData")) {
-      saveStockData(defaultStockData);
+        saveStockData(defaultStockData);
     }
-
-    // Event listener untuk memastikan perubahan data langsung terlihat di semua halaman
-    window.addEventListener("storage", loadStock);
 
     // Load stok saat halaman dimuat
     loadStock();
-  </script>
+</script>
+
 </body>
 </html>
