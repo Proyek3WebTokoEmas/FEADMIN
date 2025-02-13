@@ -85,13 +85,17 @@
       { jenis: "Gelang", stok: 25 }
     ];
 
-    // Cek apakah localStorage sudah ada atau belum
-    if (!localStorage.getItem("stockData")) {
-      localStorage.setItem("stockData", JSON.stringify(defaultStockData));
+    function getStockData() {
+      let stockData = localStorage.getItem("stockData");
+      return stockData ? JSON.parse(stockData) : defaultStockData;
+    }
+
+    function saveStockData(data) {
+      localStorage.setItem("stockData", JSON.stringify(data));
     }
 
     function loadStock() {
-      const stockData = JSON.parse(localStorage.getItem("stockData"));
+      const stockData = getStockData();
       const stockTableBody = document.getElementById("stockTableBody");
       stockTableBody.innerHTML = "";
 
@@ -111,22 +115,30 @@
     }
 
     function tambahStok(index) {
-      let stockData = JSON.parse(localStorage.getItem("stockData"));
+      let stockData = getStockData();
       stockData[index].stok += 1;
-      localStorage.setItem("stockData", JSON.stringify(stockData));
+      saveStockData(stockData);
       loadStock();
     }
 
     function kurangiStok(index) {
-      let stockData = JSON.parse(localStorage.getItem("stockData"));
+      let stockData = getStockData();
       if (stockData[index].stok > 0) {
         stockData[index].stok -= 1;
-        localStorage.setItem("stockData", JSON.stringify(stockData));
+        saveStockData(stockData);
         loadStock();
       } else {
         alert("Stok tidak boleh kurang dari 0!");
       }
     }
+
+    // Pastikan localStorage terisi saat pertama kali
+    if (!localStorage.getItem("stockData")) {
+      saveStockData(defaultStockData);
+    }
+
+    // Event listener untuk memastikan perubahan data langsung terlihat di semua halaman
+    window.addEventListener("storage", loadStock);
 
     // Load stok saat halaman dimuat
     loadStock();
