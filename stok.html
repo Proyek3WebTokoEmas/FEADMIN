@@ -75,27 +75,30 @@
       </table>
     </div>
   </div>
-
-  <script>
-    // Data default jika localStorage kosong
-    const defaultStockData = [
-        { jenis: "Anting", stok: 20 },
-        { jenis: "Cincin", stok: 35 },
-        { jenis: "Kalung", stok: 15 },
-        { jenis: "Gelang", stok: 25 }
-    ];
-
-    function getStockData() {
-        let stockData = localStorage.getItem("stockData");
-        return stockData ? JSON.parse(stockData) : defaultStockData;
+<script>
+    async function fetchStockData() {
+        try {
+            const response = await fetch('stok.json'); // Mengambil data stok dari JSON
+            const stockData = await response.json();
+            localStorage.setItem("stockData", JSON.stringify(stockData)); 
+            loadStock();
+        } catch (error) {
+            console.error("Gagal mengambil data stok:", error);
+        }
     }
 
-    function saveStockData(data) {
-        localStorage.setItem("stockData", JSON.stringify(data));
+    async function updateStockData() {
+        let stockData = JSON.parse(localStorage.getItem("stockData")) || [];
+        await fetch('stok.json', {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(stockData)
+        });
+        loadStock();
     }
 
     function loadStock() {
-        const stockData = getStockData();
+        const stockData = JSON.parse(localStorage.getItem("stockData")) || [];
         const stockTableBody = document.getElementById("stockTableBody");
         stockTableBody.innerHTML = "";
 
@@ -105,8 +108,8 @@
                     <td>${item.jenis}</td>
                     <td><span id="stok-${index}">${item.stok}</span></td>
                     <td>
-                        <button class="btn btn-success btn-sm" onclick="tambahStok(${index})">Tambah</button>
-                        <button class="btn btn-danger btn-sm" onclick="kurangiStok(${index})">Kurangi</button>
+                        <button class="btn btn-success btn-sm" onclick="modifyStock(${index}, 1)">Tambah</button>
+                        <button class="btn btn-danger btn-sm" onclick="modifyStock(${index}, -1)">Kurangi</button>
                     </td>
                 </tr>
             `;
@@ -114,47 +117,20 @@
         });
     }
 
-    function tambahStok(index) {
-        let stockData = getStockData();
-        stockData[index].stok += 1;
-        saveStockData(stockData);
-        loadStock();
-    }
-
-    function kurangiStok(index) {
-        let stockData = getStockData();
-        if (stockData[index].stok > 0) {
-            stockData[index].stok -= 1;
-            saveStockData(stockData);
-            loadStock();
+    function modifyStock(index, value) {
+        let stockData = JSON.parse(localStorage.getItem("stockData")) || [];
+        if (stockData[index].stok + value >= 0) {
+            stockData[index].stok += value;
+            localStorage.setItem("stockData", JSON.stringify(stockData));
+            updateStockData();
         } else {
             alert("Stok tidak boleh kurang dari 0!");
         }
     }
 
-    // Event listener untuk mendeteksi perubahan di localStorage
-    window.addEventListener("storage", function(event) {
-        if (event.key === "stockUpdated") {
-            let updatedStock = JSON.parse(localStorage.getItem("stockUpdated"));
-            let stockData = getStockData();
-
-            let found = stockData.find(item => item.jenis.includes("Kalung"));
-            if (found) {
-                found.stok = updatedStock.stock;
-                saveStockData(stockData);
-                loadStock();
-            }
-        }
-    });
-
-    // Pastikan localStorage terisi saat pertama kali
-    if (!localStorage.getItem("stockData")) {
-        saveStockData(defaultStockData);
-    }
-
-    // Load stok saat halaman dimuat
-    loadStock();
+    document.addEventListener("DOMContentLoaded", fetchStockData);
 </script>
+
 
 </body>
 </html>
