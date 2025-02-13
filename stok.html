@@ -98,37 +98,47 @@
     }
 
     function loadStock() {
-        const stockData = JSON.parse(localStorage.getItem("stockData")) || [];
-        const stockTableBody = document.getElementById("stockTableBody");
-        stockTableBody.innerHTML = "";
+    const stockData = JSON.parse(localStorage.getItem("stockData")) || [];
+    const stockTableBody = document.getElementById("stockTableBody");
+    stockTableBody.innerHTML = "";
 
-        stockData.forEach((item, index) => {
-            const row = `
-                <tr>
-                    <td>${item.jenis}</td>
-                    <td><span id="stok-${index}">${item.stok}</span></td>
-                    <td>
-                        <button class="btn btn-success btn-sm" onclick="modifyStock(${index}, 1)">Tambah</button>
-                        <button class="btn btn-danger btn-sm" onclick="modifyStock(${index}, -1)">Kurangi</button>
-                    </td>
-                </tr>
-            `;
-            stockTableBody.innerHTML += row;
-        });
+    stockData.forEach((item, index) => {
+        const row = `
+            <tr>
+                <td>${item.jenis}</td>
+                <td><span id="stok-${index}">${item.stok}</span></td>
+                <td>
+                    <button class="btn btn-success btn-sm" onclick="modifyStock(${index}, 1)">Tambah</button>
+                    <button class="btn btn-danger btn-sm" onclick="modifyStock(${index}, -1)">Kurangi</button>
+                </td>
+            </tr>
+        `;
+        stockTableBody.innerHTML += row;
+    });
+}
+
+function modifyStock(index, value) {
+    let stockData = JSON.parse(localStorage.getItem("stockData")) || [];
+    if (stockData[index].stok + value >= 0) {
+        stockData[index].stok += value;
+        localStorage.setItem("stockData", JSON.stringify(stockData));
+
+        // Kirim event perubahan stok agar kalung.html ikut update
+        window.dispatchEvent(new Event("storage"));
+        loadStock();
+    } else {
+        alert("Stok tidak boleh kurang dari 0!");
     }
+}
 
-    function modifyStock(index, value) {
-        let stockData = JSON.parse(localStorage.getItem("stockData")) || [];
-        if (stockData[index].stok + value >= 0) {
-            stockData[index].stok += value;
-            localStorage.setItem("stockData", JSON.stringify(stockData));
-            updateStockData();
-        } else {
-            alert("Stok tidak boleh kurang dari 0!");
-        }
-    }
+// Dengarkan perubahan di localStorage (sinkronisasi otomatis)
+window.addEventListener("storage", () => {
+    console.log("Stok diperbarui dari halaman lain");
+    loadStock();
+});
 
-    document.addEventListener("DOMContentLoaded", fetchStockData);
+document.addEventListener("DOMContentLoaded", fetchStockData);
+
 </script>
 
 
